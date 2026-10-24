@@ -1,0 +1,17 @@
+node_modules/
+release/
+.qa*
+.taste-skill/
+*.log
+build-result.json
+electron.zip
+.env
+.env.*
+!.env.example
+server/.runtime/
+*.pfx
+*.p12
+*.pem
+*.key
+Thumbs.db
+.DS_Store

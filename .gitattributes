@@ -1,0 +1,10 @@
+* text=auto
+*.cmd text eol=crlf
+*.cjs text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.png binary
+*.ico binary
+*.woff2 binary
+*.ttf binary

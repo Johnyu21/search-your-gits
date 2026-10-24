@@ -1,0 +1,81 @@
+{
+  "name": "github-rank-desk",
+  "version": "1.1.2",
+  "description": "Search Your Gits · 寻迹 — GitHub 开源项目探索工具",
+  "author": "future",
+  "main": "main.js",
+  "scripts": {
+    "start": "node scripts/start-dev.cjs",
+    "test": "node --test",
+    "dist": "node scripts/package.cjs",
+    "version:bump": "node scripts/bump-version.cjs",
+    "feedback:server": "node --env-file-if-exists=server/.env server/feedback-server.cjs",
+    "release:check": "node scripts/verify-release.cjs"
+  },
+  "dependencies": {
+    "cheerio": "1.2.0",
+    "nodemailer": "^10.2.1"
+  },
+  "devDependencies": {
+    "electron": "40.8.0",
+    "electron-builder": "26.0.12",
+    "playwright-core": "^1.64.1"
+  },
+  "build": {
+    "appId": "com.rankdesk.github",
+    "productName": "Search Your Gits",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "lib/**/*",
+      "ui/**/*",
+      "CHANGELOG.md",
+      "LICENSE",
+      "THIRD-PARTY-NOTICES.md",
+      "assets/icon.ico",
+      "assets/icon.png"
+    ],
+    "directories": {
+      "output": "release/${version}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "Search-Your-Gits-Setup-${version}-x64.exe",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Search Your Gits · 寻迹",
+      "installerLanguages": [
+        "zh_CN",
+        "en_US"
+      ],
+      "language": "2052",
+      "displayLanguageSelector": false,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "artifactName": "Search-Your-Gits-Setup-${version}-x64.exe",
+      "differentialPackage": false,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    }
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.16.0"
+  }
+}

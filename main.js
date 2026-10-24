@@ -1,0 +1,59 @@
+const {app,BrowserWindow,ipcMain,shell,dialog,safeStorage,net,nativeImage,session}=require('electron');
+const fs=require('node:fs/promises'),path=require('node:path');const {Service}=require('./lib/service');const {csv}=require('./lib/core');const {Translator}=require('./lib/translation');const {News,SOURCES,safeLink}=require('./lib/news');
+const {ProviderLogin}=require('./lib/provider-login');
+const {ToolsData,safeToolLink}=require('./lib/tools-data');const {UsageLedger,usageCSV}=require('./lib/tools-analysis');
+const {Feedback,validateEndpoint,RECIPIENT}=require('./lib/feedback');const {library,validateAppearance}=require('./lib/skins');const {randomUUID}=require('node:crypto');
+let splash,win,db,file,token='',service,queue=Promise.resolve(),timer;
+const fresh=()=>({version:1,cache:{},history:{},favorites:{},settings:{autoCollect:true},secret:''});
+function save(){const data=JSON.stringify(db);queue=queue.catch(()=>{}).then(async()=>{await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file+'.tmp',data);await fs.rename(file+'.tmp',file);});return queue;}
+function publicState(){return {appVersion:app.getVersion(),skins:library(db),feedbackDraft:db.feedbackDraft||{},lastFeedbackAt:db.lastFeedback?.at||null,feedbackRetryAt:db.feedbackRetryAt||0,feedbackEndpoint:db.settings.feedbackEndpoint||process.env.FEEDBACK_API_URL||'',favorites:db.favorites,settings:db.settings,hasToken:!!token,tracked:Object.keys(db.history).length,lastCollection:db.lastCollection||null,dataPath:app.getPath('userData')};}
+function handle(name,fn){ipcMain.handle(name,async(e,...args)=>{if(e.sender!==win.webContents)throw new Error('无效来源');try{return {ok:true,data:await fn(...args)};}catch(err){return {ok:false,error:err.message};}});}
+function revealMain(){if(!win||win.isDestroyed())return;if(win.isMinimized())win.restore();win.show();win.focus();}
+async function createStartup(){
+ let finished=false;
+ const current=new BrowserWindow({icon:path.join(__dirname,'assets/icon.ico'),width:640,height:400,useContentSize:true,frame:false,resizable:false,maximizable:false,show:false,alwaysOnTop:true,backgroundColor:'#001420',webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
+ splash=current;current.setMenuBarVisibility(false);
+ current.on('closed',()=>{if(splash===current)splash=null;if(!finished)app.quit();});
+ current.webContents.setWindowOpenHandler(()=>({action:'deny'}));current.webContents.on('will-navigate',event=>event.preventDefault());
+ const painted=new Promise(resolve=>current.once('ready-to-show',resolve));
+ await current.loadFile(path.join(__dirname,'ui/startup.html'));
+ await current.webContents.executeJavaScript('document.images[0].decode().then(()=>true)');await painted;
+ if(current.isDestroyed())throw Error('启动页面已关闭');current.center();current.show();
+ // Windows 可能按启动器的 SW_HIDE 忽略第一次显示；重新切换后再计时。
+ if(!current.isVisible()){current.hide();current.show();}current.focus();
+ if(!current.isVisible())throw Error('启动窗口未能显示，请重试启动');
+ return {shownAt:performance.now(),finish(){finished=true;if(!current.isDestroyed())current.close();}};
+}
+async function repeatStartup(){
+ if(splash&&!splash.isDestroyed()){if(splash.isVisible()){splash.show();splash.focus();}return;}
+ if(!win||win.isDestroyed())return;
+ const intro=await createStartup();
+ await new Promise(resolve=>setTimeout(resolve,Math.max(0,3000-(performance.now()-intro.shownAt))));
+ revealMain();intro.finish();
+}
+async function start(){const intro=await createStartup();file=path.join(app.getPath('userData'),'data.json');try{db=JSON.parse(await fs.readFile(file,'utf8'));if(db.version!==1||!db.history||!db.cache||!db.favorites||!db.settings)throw new Error('数据格式错误');}catch(e){if(e.code!=='ENOENT'){try{await fs.copyFile(file,file+'.backup-'+Date.now());}catch{}dialog.showErrorBox('本地数据读取失败','已尽可能保留原文件备份，将新建数据。请检查数据目录。');}db=fresh();}if(db.secret)try{token=safeStorage.decryptString(Buffer.from(db.secret,'base64'));}catch{dialog.showErrorBox('Token 需要重新设置','Windows 凭据解密失败，请在设置中重新填写 Token。');}
+ db.settings={readingGlass:true,theme:'light',blur:12,animations:true,wallpaper:'future-splash',skinTone:'dark',surfaceOpacity:85,...db.settings};
+ if(!library(db).some(s=>s.id===db.settings.wallpaper))db.settings.wallpaper='future-splash';
+ service=new Service(db,(...a)=>net.fetch(...a),save,()=>token);
+ const translator=new Translator(db,(...a)=>net.fetch(...a),save),news=new News(db,(...a)=>net.fetch(...a),save);
+ handle('search',(o,f)=>service.search(o,!!f));handle('translate',(t,s)=>translator.translate(t,s));handle('news',(o,f)=>news.list(o,!!f));handle('open-news',url=>{const normalized=SOURCES.map(s=>safeLink(url,s)).find(Boolean);if(!normalized)throw Error('资讯链接无效');return shell.openExternal(normalized);});
+ const accounts=new ProviderLogin({BrowserWindow,session,db,save,parent:()=>win,icon:path.join(__dirname,'assets/icon.ico')});
+ accounts.on('prices',event=>{if(win&&!win.isDestroyed())win.webContents.send('provider-prices',event);});
+ handle('provider-state',()=>accounts.state());handle('provider-login',id=>accounts.open(id));handle('provider-logout',id=>accounts.logout(id));
+ const tools=new ToolsData(db,(...a)=>net.fetch(...a),save,()=>token,accounts),usage=new UsageLedger(db,save,id=>tools.findPrice(id));
+ handle('tools-state',()=>usage.state());handle('tools-prices',f=>tools.prices(!!f));handle('tools-ladder',f=>tools.ladder(!!f));handle('tools-updates',f=>tools.updates(!!f));handle('tools-estimate',o=>usage.analyze(o));handle('tools-usage-add',o=>usage.add(o));handle('tools-usage-remove',id=>usage.remove(id));handle('tools-settings',o=>usage.settings(o));handle('tools-open',url=>shell.openExternal(safeToolLink(url)));
+ handle('tools-export',async()=>{const r=await dialog.showSaveDialog(win,{title:'导出本机手动用量账本',defaultPath:'Search-Your-Gits-用量-'+new Date().toISOString().slice(0,10)+'.csv',filters:[{name:'CSV 表格',extensions:['csv']}]});if(r.canceled)return false;await fs.writeFile(r.filePath,usageCSV(db.toolsUsage||[]));return true;});
+ const feedback=new Feedback(db,(...a)=>net.fetch(...a),save,()=>db.settings.feedbackEndpoint||process.env.FEEDBACK_API_URL||'');
+ handle('feedback-draft',o=>feedback.draft(o));handle('feedback-submit',o=>feedback.submit({...o,version:app.getVersion()}));handle('feedback-endpoint',async url=>{db.settings.feedbackEndpoint=validateEndpoint(url);await save();return publicState();});
+ handle('skin-import',async()=>{if((db.customSkins||[]).length>=12)throw Error('最多保留 12 张自定义壁纸，请先移除一张。');const r=await dialog.showOpenDialog(win,{title:'导入自定义壁纸',properties:['openFile'],filters:[{name:'图片',extensions:['png','jpg','jpeg','webp']}]});if(r.canceled)return null;const input=r.filePaths[0],stat=await fs.stat(input);if(stat.size>20*1024*1024)throw Error('请选择小于 20MB 的图片');let image=nativeImage.createFromBuffer(await fs.readFile(input));if(image.isEmpty())throw Error('图片格式无效，请使用 PNG、JPG 或 WebP');const size=image.getSize();if(size.width<320||size.height<180)throw Error('图片至少需要 320×180 像素');const scale=Math.min(1,1920/size.width,1080/size.height);if(scale<1)image=image.resize({width:Math.round(size.width*scale),height:Math.round(size.height*scale),quality:'best'});const skin={id:'custom-'+randomUUID(),name:path.basename(input,path.extname(input)).slice(0,50),builtin:false,src:'data:image/jpeg;base64,'+image.toJPEG(88).toString('base64')};db.customSkins||=[];db.customSkins.push(skin);await save();return {skin,state:publicState()};});
+ handle('skin-remove',async id=>{if(!db.customSkins?.some(s=>s.id===id))throw Error('仅可移除自定义导入的壁纸');db.customSkins=db.customSkins.filter(s=>s.id!==id);if(db.settings.wallpaper===id)db.settings.wallpaper='future-splash';await save();return publicState();});
+ handle('appearance',async s=>{Object.assign(db.settings,validateAppearance(s,db));await save();return publicState();});handle('changelog',()=>fs.readFile(path.join(__dirname,'CHANGELOG.md'),'utf8'));
+ handle('state',()=>publicState());handle('ranking',(o,f)=>service.ranking(o,!!f));handle('detail',n=>service.detail(n));handle('readme',(n,f)=>service.readme(n,!!f));
+ handle('favorite',async r=>{if(!r||! /^[\w.-]+\/[\w.-]+$/.test(r.name))throw new Error('仓库名称无效');if(db.favorites[r.name])delete db.favorites[r.name];else db.favorites[r.name]=r;await save();return publicState();});
+ handle('settings',async s=>{if(typeof s.autoCollect!=='boolean'||typeof s.token!=='string'||s.token.length>300)throw new Error('设置无效');if(s.token.trim()){if(!safeStorage.isEncryptionAvailable())throw new Error('Windows 安全存储不可用，无法保存 Token。');token=s.token.trim();db.secret=safeStorage.encryptString(token).toString('base64');}if(s.clearToken){token='';db.secret='';}db.settings.autoCollect=s.autoCollect;await save();return publicState();});
+ handle('collect',()=>service.collect());handle('open',url=>{const u=new URL(url);if(u.protocol!=='https:'||u.hostname!=='github.com')throw new Error('仅允许打开 GitHub HTTPS 链接');return shell.openExternal(u.href);});
+ handle('export',async(rows,meta)=>{if(!Array.isArray(rows)||rows.length>1000)throw new Error('导出数据无效');const r=await dialog.showSaveDialog(win,{title:'导出当前榜单',defaultPath:'Search-Your-Gits-'+new Date().toISOString().slice(0,10)+'.csv',filters:[{name:'CSV 表格',extensions:['csv']}]});if(r.canceled)return false;await fs.writeFile(r.filePath,csv(rows));await fs.writeFile(r.filePath+'.说明.txt',String(meta||''),'utf8');return true;});handle('data-folder',()=>shell.openPath(app.getPath('userData')));
+ win=new BrowserWindow({icon:path.join(__dirname,'assets/icon.ico'),width:1420,height:920,show:false,minWidth:860,minHeight:640,title:'Search Your Gits · 寻迹',backgroundColor:'#f9fbfc',webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});win.setMenuBarVisibility(false);win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',e=>e.preventDefault());await win.loadFile('ui/index.html');setTimeout(()=>{revealMain();intro.finish();},Math.max(0,3000-(performance.now()-intro.shownAt))); 
+ timer=setInterval(()=>{if(db.settings.autoCollect)service.collect().then(r=>win?.webContents.send('collection',{success:true,...r})).catch(e=>win?.webContents.send('collection',{success:false,error:e.message}));},6*3600000);
+}
+const lock=app.requestSingleInstanceLock();if(!lock)app.quit();else{app.on('second-instance',()=>{repeatStartup().catch(error=>{revealMain();dialog.showErrorBox('启动页面显示失败',error.message);});});app.whenReady().then(start).catch(e=>{dialog.showErrorBox('启动失败',e.message);app.quit();});app.on('window-all-closed',()=>{clearInterval(timer);app.quit();});}

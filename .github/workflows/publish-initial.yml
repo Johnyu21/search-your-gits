@@ -1,0 +1,56 @@
+name: Publish initial Windows preview
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-initial.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: initial-windows-preview
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check whether this version is already published
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          gh release view "v$version" --json tagName 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            "needed=false" >> $env:GITHUB_OUTPUT
+          } else {
+            "needed=true" >> $env:GITHUB_OUTPUT
+          }
+          exit 0
+      - if: steps.version.outputs.needed == 'true'
+        run: npm ci
+      - if: steps.version.outputs.needed == 'true'
+        run: npm run dist
+      - name: Publish verified preview assets
+        if: steps.version.outputs.needed == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $tag = "v$version"
+          gh release create $tag --target $env:GITHUB_SHA --draft --prerelease --title "Search Your Gits $version" --notes-file "docs/releases/v$version.md" "release/$version/Search-Your-Gits-Setup-$version-x64.exe" "release/$version/Search-Your-Gits-Source-$version.zip" "release/$version/SHA256SUMS.txt"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create release and attach assets' }
+          gh release edit $tag --draft=false --prerelease
+          if ($LASTEXITCODE -ne 0) { throw 'Assets uploaded, but public release was not confirmed' }
