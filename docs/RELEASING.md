@@ -24,10 +24,10 @@ npm run release:check
 
 历史文件名 publish-initial.yml 现在显示为 **Publish current Windows release**。仅修改该文件并推到 main，或手动运行该工作流时执行：
 
-1. 检查 package.json 当前版本是否已有 Release；已存在则跳过，不覆盖历史附件。
+1. 检查 package.json 当前版本是否已有 Release；公开版本跳过，不覆盖历史附件。已有草稿则按 ID 恢复，核验其源码与当前提交仅有发布流程或文档差异，程序源码变化时停止复用、要求重新构建。
 2. Windows 运行 npm ci、npm run dist，执行自动测试和产物校验。
-3. 创建当前版本的草稿 Release，附安装器、源码 ZIP 和哈希文件。
-4. 核验三个附件均已上传且非空，再取消 draft/prerelease 并明确设为 Latest。
+3. 创建当前版本的草稿 Release，附安装器、源码 ZIP 和哈希文件；已有完整草稿则保留原构建及目标提交。
+4. 按草稿 ID 核验三个附件均已上传且非空，再通过 Release ID 取消 draft/prerelease 并明确设为 Latest；未发布草稿不能依赖 tags 端点查询。
 5. 通过 releases/latest 接口确认版本和公开状态。
 
 该工作流使用仓库 GITHUB_TOKEN，不需要提交个人 Token。普通源码分支推送不会自动发布。

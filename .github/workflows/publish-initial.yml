@@ -30,11 +30,23 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          gh release view "v$version" --json tagName 2>$null
-          if ($LASTEXITCODE -eq 0) {
+          $pages = gh api --paginate --slurp "repos/$env:GH_REPO/releases?per_page=100" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not inspect existing releases' }
+          $existing = @($pages | ForEach-Object { $_ } | Where-Object { $_.tag_name -eq "v$version" }) | Select-Object -First 1
+          if ($existing) {
+            if ($existing.draft -and $existing.target_commitish -ne $env:GITHUB_SHA) {
+              $changed = gh api "repos/$env:GH_REPO/compare/$($existing.target_commitish)...$env:GITHUB_SHA" --jq '.files[].filename'
+              if ($LASTEXITCODE -ne 0) { throw 'Could not verify the draft source revision' }
+              $runtimeChanges = @($changed | Where-Object { $_ -notmatch '^(\.github/|docs/|README\.md$|CHANGELOG\.md$)' })
+              if ($runtimeChanges.Count -gt 0) { throw 'Existing draft has a different application revision; rebuild it before publishing' }
+            }
             "needed=false" >> $env:GITHUB_OUTPUT
+            "publish=$($existing.draft.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+            "release_id=$($existing.id)" >> $env:GITHUB_OUTPUT
           } else {
             "needed=true" >> $env:GITHUB_OUTPUT
+            "publish=true" >> $env:GITHUB_OUTPUT
+            "release_id=" >> $env:GITHUB_OUTPUT
           }
           exit 0
       - if: steps.version.outputs.needed == 'true'
@@ -42,24 +54,33 @@ jobs:
       - if: steps.version.outputs.needed == 'true'
         run: npm run dist
       - name: Publish verified assets as Latest
-        if: steps.version.outputs.needed == 'true'
+        if: steps.version.outputs.publish == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.version.outputs.release_id }}
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           $tag = "v$version"
-          gh release create $tag --target $env:GITHUB_SHA --draft --title "Search Your Gits $version" --notes-file "docs/releases/v$version.md" "release/$version/Search-Your-Gits-Setup-$version-x64.exe" "release/$version/Search-Your-Gits-Source-$version.zip" "release/$version/SHA256SUMS.txt"
-          if ($LASTEXITCODE -ne 0) { throw 'Could not create release and attach assets' }
-          $release = gh api "repos/$env:GH_REPO/releases/tags/$tag" | ConvertFrom-Json
+          if (!$env:RELEASE_ID) {
+            gh release create $tag --target $env:GITHUB_SHA --draft --title "Search Your Gits $version" --notes-file "docs/releases/v$version.md" "release/$version/Search-Your-Gits-Setup-$version-x64.exe" "release/$version/Search-Your-Gits-Source-$version.zip" "release/$version/SHA256SUMS.txt"
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create release and attach assets' }
+            $pages = gh api --paginate --slurp "repos/$env:GH_REPO/releases?per_page=100" | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0) { throw 'Could not locate the new draft release' }
+            $created = @($pages | ForEach-Object { $_ } | Where-Object { $_.tag_name -eq $tag }) | Select-Object -First 1
+            if (!$created) { throw 'The new draft release was not found' }
+            $env:RELEASE_ID = [string]$created.id
+          }
+          $release = gh api "repos/$env:GH_REPO/releases/$env:RELEASE_ID" | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0) { throw 'Could not inspect release assets' }
+          if ($release.tag_name -ne $tag -or !$release.draft) { throw 'Release identity or draft state changed' }
           $expected = @("Search-Your-Gits-Setup-$version-x64.exe", "Search-Your-Gits-Source-$version.zip", "SHA256SUMS.txt")
           foreach ($name in $expected) {
             $asset = $release.assets | Where-Object { $_.name -eq $name }
             if (!$asset -or $asset.state -ne 'uploaded' -or $asset.size -le 0) { throw "Missing or incomplete asset: $name" }
           }
-          gh release edit $tag --draft=false --prerelease=false --latest
+          gh api --method PATCH "repos/$env:GH_REPO/releases/$env:RELEASE_ID" -F draft=false -F prerelease=false -f make_latest=true --silent
           if ($LASTEXITCODE -ne 0) { throw 'Assets uploaded, but public release was not confirmed' }
           $latest = gh api "repos/$env:GH_REPO/releases/latest" | ConvertFrom-Json
           if ($LASTEXITCODE -ne 0 -or $latest.tag_name -ne $tag -or $latest.draft -or $latest.prerelease) { throw 'Latest release verification failed' }
