@@ -1,44 +1,50 @@
 # 维护者发布指南
 
-本地目录整理与安装包验收日期：2026-10-24。版本保持 1.1.2，不因为打包重复递增版本。仓库：https://github.com/Johnyu21/search-your-gits 。普通用户从 Releases 下载。首次发布由 publish-initial.yml 在首次提交时构建并公开为 prerelease；后续版本继续使用标签触发的草稿发布流程。
+当前版本 1.1.3，Windows x64，MIT。仓库：[Johnyu21/search-your-gits](https://github.com/Johnyu21/search-your-gits)。普通用户从仓库右侧 Releases 的 Latest 版本下载 EXE。1.1.2 保留为历史预发布版，1.1.3 按用户授权发布为正式版并设为 Latest；发布不额外递增版本号。
 
-## 上传什么
+## 提交与附件
 
-源码仓库：提交根目录中的源码、文档、assets、test、scripts、server/.env.example 与 .github。不要提交 node_modules、release、server/.env、server/.runtime、QA 目录或用户 data.json。项目外的 D:/get_github-archive 仅为本机备份，也不上传。
+源码提交根目录中的代码、文档、assets、test、scripts、server/.env.example 与 .github。禁止包含 node_modules、release、server/.env、server/.runtime、QA、用户 data.json 或项目外的本机备份。
 
-Release 附件：Search-Your-Gits-Setup-1.1.2-x64.exe、Search-Your-Gits-Source-1.1.2.zip、SHA256SUMS.txt。不要把 win-unpacked 当作用户下载附件。GitHub 自带 Source code 附件不包含可直接运行的安装器。
+Release 仅附 Search-Your-Gits-Setup-1.1.3-x64.exe、Search-Your-Gits-Source-1.1.3.zip、SHA256SUMS.txt。win-unpacked 供本地验证，不作为用户安装附件。GitHub 自动提供的 Source code 也是源码，不是安装器。
 
-## 本机生成
+## 本地构建
 
 ~~~powershell
 npm ci
+npm test
+npm run test:desktop
 npm run dist
 npm run release:check
 ~~~
 
-产物位于 release/1.1.2/。检查中文安装、启动页、桌面快捷方式、基本功能和卸载后，再上传。构建使用 package-lock 固定 npm 依赖；安装器暂未签名，发布说明需明确写出。
+桌面联调使用隔离临时用户目录和合成响应，不发送邮件或创建真实 Issue。输出目录 release/1.1.3。安装器暂未代码签名。云端重新构建的时间与环境不同，哈希可能不同；每份安装包使用同次发布的 SHA256SUMS.txt。
 
-## 推荐：GitHub Actions 草稿流程
+## 本轮正式发布
 
-1. 新建仓库并上传源码；先检查差异，确认没有私密文件。不要直接把整个本机文件夹压缩后上传。
-2. 确认 Actions 中 CI 已通过。
-3. 创建与 package.json 完全相符的标签 v1.1.2 并推送。仅标签推送会触发草稿 Release；普通分支推送和 PR 不会发布。
-4. Windows 构建任务运行自动测试、构建和产物检查，将三个文件附到 **draft + prerelease**。
-5. 打开 Releases 草稿，下载附件验收，核对 SHA256，检查 docs/releases/v1.1.2.md 中的限制说明，然后由维护者手动发布。workflow_dispatch 只打包为 Actions Artifact，不发布 Release。
+历史文件名 publish-initial.yml 现在显示为 **Publish current Windows release**。仅修改该文件并推到 main，或手动运行该工作流时执行：
 
-若希望本机手动上传：打开 Releases → Draft a new release，选择 v1.1.2，复制 docs/releases/v1.1.2.md 的说明并附加三个产物，保存草稿，验收后发布。GitHub 官方流程：https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository 。安装器配置依据：https://www.electron.build/nsis/ 。
+1. 检查 package.json 当前版本是否已有 Release；已存在则跳过，不覆盖历史附件。
+2. Windows 运行 npm ci、npm run dist，执行自动测试和产物校验。
+3. 创建当前版本的草稿 Release，附安装器、源码 ZIP 和哈希文件。
+4. 核验三个附件均已上传且非空，再取消 draft/prerelease 并明确设为 Latest。
+5. 通过 releases/latest 接口确认版本和公开状态。
 
-## 发布前实际限制
+该工作流使用仓库 GITHUB_TOKEN，不需要提交个人 Token。普通源码分支推送不会自动发布。
 
-- 公网反馈服务尚未部署。安装包不包含 SMTP 授权码，也不会在用户电脑自动启动本机邮件服务；部署后可在设置中配置 HTTPS 地址。不能宣传“所有用户开箱即可发邮件”。
-- CloseAI 官方登录表单已检查，真实账户报价需要账户持有人自行登录验证，平台接口更改可能导致同步失败。
-- 外部来源有网络、频率与结构限制。季度榜依赖本机历史，不能作为官方季度全网榜。
-- 仅 Windows x64；未做代码签名，不能宣称已通过 SmartScreen 信誉认证或所有安全软件检测。
+## 后续版本
 
-## 版本维护
+同步 package.json、package-lock.json，准备 docs/releases/v版本号.md，确认 CI 与安装验收通过后推送相符的版本标签。release.yml 将生成带三个附件的 **正式版草稿**；维护者验收后 Publish release，并选中 Set as the latest release，即可在右侧显示 Latest。若需要预发布测试，维护者应主动勾选预发布，该版本不能设为 Latest。手动运行 release.yml 只生成 Actions Artifact，不发布。
 
-只有明确的“版本更新”需求才递增版本并修改 CHANGELOG；本轮打包不改版本。未来版本先同步 package.json、package-lock.json，再准备相应 docs/releases/v版本号.md 与标签。
+需要直接发布当前新版本时，也可在明确授权后更新并触发 publish-initial.yml。不要为了重复打包增加版本或覆盖已经发布的同名标签和附件。
 
-## 凭据
+客户端更新检测只发现公开 Release；提交源码或保存草稿不会提醒客户端。旧 1.1.2 没有更新检测，需手动安装一次 1.1.3 或更高版本。
 
-如果任何 SMTP 授权码或 Token 曾进入公开提交、Issue 或截图，应在服务商处撤销并重新生成。仓库仅放占位示例。现有本机 server/.env 由 .gitignore 排除且不会进入安装器或白名单源码 ZIP。
+## 发布限制
+
+- 默认反馈入口为 GitHub Issues，需要用户登录并确认公开发布；邮件投递仍需独立 HTTPS 服务，不内置 SMTP 授权码。
+- CloseAI 报价需要各用户自行登录官方页面。外部榜单、翻译、资讯有网络和额度限制；季度增长依赖本机历史。
+- 仅 Windows x64，程序暂未签名，不能宣称已经获得 SmartScreen 信誉。
+- SMTP、翻译密钥和 GitHub Token 不提交仓库或放入附件；私密 .env 保留在本机。
+
+[GitHub Release 管理](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) · [Latest 参数](https://cli.github.com/manual/gh_release_edit)

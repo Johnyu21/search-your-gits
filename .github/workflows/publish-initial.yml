@@ -1,4 +1,4 @@
-name: Publish initial Windows preview
+name: Publish current Windows release
 on:
   push:
     branches: [main]
@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: initial-windows-preview
+  group: current-windows-release
   cancel-in-progress: false
 jobs:
   publish:
@@ -41,7 +41,7 @@ jobs:
         run: npm ci
       - if: steps.version.outputs.needed == 'true'
         run: npm run dist
-      - name: Publish verified preview assets
+      - name: Publish verified assets as Latest
         if: steps.version.outputs.needed == 'true'
         shell: pwsh
         env:
@@ -50,7 +50,16 @@ jobs:
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           $tag = "v$version"
-          gh release create $tag --target $env:GITHUB_SHA --draft --prerelease --title "Search Your Gits $version" --notes-file "docs/releases/v$version.md" "release/$version/Search-Your-Gits-Setup-$version-x64.exe" "release/$version/Search-Your-Gits-Source-$version.zip" "release/$version/SHA256SUMS.txt"
+          gh release create $tag --target $env:GITHUB_SHA --draft --title "Search Your Gits $version" --notes-file "docs/releases/v$version.md" "release/$version/Search-Your-Gits-Setup-$version-x64.exe" "release/$version/Search-Your-Gits-Source-$version.zip" "release/$version/SHA256SUMS.txt"
           if ($LASTEXITCODE -ne 0) { throw 'Could not create release and attach assets' }
-          gh release edit $tag --draft=false --prerelease
+          $release = gh api "repos/$env:GH_REPO/releases/tags/$tag" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not inspect release assets' }
+          $expected = @("Search-Your-Gits-Setup-$version-x64.exe", "Search-Your-Gits-Source-$version.zip", "SHA256SUMS.txt")
+          foreach ($name in $expected) {
+            $asset = $release.assets | Where-Object { $_.name -eq $name }
+            if (!$asset -or $asset.state -ne 'uploaded' -or $asset.size -le 0) { throw "Missing or incomplete asset: $name" }
+          }
+          gh release edit $tag --draft=false --prerelease=false --latest
           if ($LASTEXITCODE -ne 0) { throw 'Assets uploaded, but public release was not confirmed' }
+          $latest = gh api "repos/$env:GH_REPO/releases/latest" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $latest.tag_name -ne $tag -or $latest.draft -or $latest.prerelease) { throw 'Latest release verification failed' }
