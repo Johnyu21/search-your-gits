@@ -1,6 +1,6 @@
 # 维护者发布指南
 
-当前版本 1.1.3，Windows x64，MIT。仓库：[Johnyu21/search-your-gits](https://github.com/Johnyu21/search-your-gits)。普通用户从仓库右侧 Releases 的 Latest 版本下载 EXE。1.1.2 保留为历史预发布版，1.1.3 按用户授权发布为正式版并设为 Latest；发布不额外递增版本号。
+当前正式版本 1.1.4，Windows x64，MIT。本轮按维护者授权发布，1.1.3 保留为历史正式版。仓库：[Johnyu21/search-your-gits](https://github.com/Johnyu21/search-your-gits)。普通用户从仓库右侧 Releases 的 Latest 版本下载 EXE。1.1.2 保留为历史预发布版，1.1.3 按用户授权发布为正式版并设为 Latest；发布不额外递增版本号。
 
 ## 提交与附件
 
@@ -18,7 +18,7 @@ npm run dist
 npm run release:check
 ~~~
 
-桌面联调使用隔离临时用户目录和合成响应，不发送邮件或创建真实 Issue。输出目录 release/1.1.3。安装器暂未代码签名。云端重新构建的时间与环境不同，哈希可能不同；每份安装包使用同次发布的 SHA256SUMS.txt。
+桌面联调使用隔离临时用户目录和合成响应，不发送邮件或创建真实 Issue。当前本地输出目录 release/1.1.4。安装器暂未代码签名。云端重新构建的时间与环境不同，哈希可能不同；每份安装包使用同次发布的 SHA256SUMS.txt。
 
 ## 本轮正式发布
 
