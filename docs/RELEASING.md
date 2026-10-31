@@ -6,7 +6,7 @@
 
 源码提交根目录中的代码、文档、assets、test、scripts、server/.env.example 与 .github。禁止包含 node_modules、release、server/.env、server/.runtime、QA、用户 data.json 或项目外的本机备份。
 
-Release 仅附 Search-Your-Gits-Setup-1.1.3-x64.exe、Search-Your-Gits-Source-1.1.3.zip、SHA256SUMS.txt。win-unpacked 供本地验证，不作为用户安装附件。GitHub 自动提供的 Source code 也是源码，不是安装器。
+Release 仅附 Search-Your-Gits-Setup-1.1.4-x64.exe、Search-Your-Gits-Source-1.1.4.zip、SHA256SUMS.txt。win-unpacked 供本地验证，不作为用户安装附件。GitHub 自动提供的 Source code 也是源码，不是安装器。
 
 ## 本地构建
 
