@@ -2,16 +2,16 @@
 
 一个中文 Windows 桌面应用，用于发现 GitHub 开源项目、阅读国内外技术资讯、比较 AI 模型价格与成本。
 
-当前版本 **1.1.4** · Windows x64 · MIT。
+当前版本 **1.1.5** · Windows x64 · MIT。
 
-[下载 Windows EXE 安装包](https://github.com/Johnyu21/search-your-gits/releases/download/v1.1.4/Search-Your-Gits-Setup-1.1.4-x64.exe) · [最新发布](https://github.com/Johnyu21/search-your-gits/releases/latest) · [全部 Releases](https://github.com/Johnyu21/search-your-gits/releases) · [问题与建议](https://github.com/Johnyu21/search-your-gits/issues)
+[下载 Windows EXE 安装包](https://github.com/Johnyu21/search-your-gits/releases/download/v1.1.5/Search-Your-Gits-Setup-1.1.5-x64.exe) · [最新发布](https://github.com/Johnyu21/search-your-gits/releases/latest) · [全部 Releases](https://github.com/Johnyu21/search-your-gits/releases) · [问题与建议](https://github.com/Johnyu21/search-your-gits/issues)
 
 仓库右侧 Releases 的 **Latest** 为最新正式版。普通用户下载 EXE 安装包即可，源码 ZIP 供开发者使用。
 
 ## 下载与安装（普通用户）
 
 1. 在本仓库页面右侧打开 **Releases**，选择需要的版本。
-2. 在 **Assets** 下载 **Search-Your-Gits-Setup-1.1.4-x64.exe**。以后版本的文件名中版本号会相应变化。
+2. 在 **Assets** 下载 **Search-Your-Gits-Setup-1.1.5-x64.exe**。以后版本的文件名中版本号会相应变化。
 3. 双击安装器，按中文向导选择安装目录。安装到当前 Windows 用户，可创建桌面和开始菜单快捷方式。
 4. 安装结束后启动 **Search Your Gits · 寻迹**。启动图默认显示约 3 秒后进入主界面。1.1.4 可在“设置与数据 → 常规与外观”关闭启动画面并保存，下次启动直接进入主界面。
 
@@ -19,7 +19,7 @@
 
 支持 Windows 10 / 11 的 64 位 x64 系统；本次不提供 Windows 7、32 位、macOS、Linux 或原生 ARM64 安装包。
 
-注意区分：GitHub 自动提供的 **Source code (zip / tar.gz)** 是源码，不是安装程序；Search-Your-Gits-Source-1.1.4.zip 也是开发者源码。普通用户只需下载 **Setup…exe**。
+注意区分：GitHub 自动提供的 **Source code (zip / tar.gz)** 是源码，不是安装程序；Search-Your-Gits-Source-1.1.5.zip 也是开发者源码。普通用户只需下载 **Setup…exe**。
 
 此构建尚未使用代码签名证书，Windows 可能显示“未知发布者”或 SmartScreen 提示。请确认下载自维护者的 Release，按下文核对哈希；组织策略阻止运行时请联系管理员，不要关闭系统安全设置。
 
@@ -28,6 +28,7 @@
 | 功能 | 使用方式与范围 |
 | --- | --- |
 | 热门增长 | GitHub Trending 周榜、月榜候选默认按 Star 总数倒序，可切换周期增长或来源顺序；新项目榜按创建时间筛选并按 Star 排序；季度增长使用本机历史快照，首次可能没有数据。 |
+| 扩展发现榜 | 独立筛选近 7 / 30 / 90 天有推送的项目，按 Star 总数排序，可选 Top 25 / 50 / 100；与真实增长榜分开。 |
 | 开源项目搜索 | 搜索公开仓库，支持语言、排序、分页及 GitHub 搜索语法；1.1.4 默认精准优先，同等匹配按 Star 倒序（当前页与最多 100 个同名补充候选内）；也可选择全局 Star 最多或最近更新。 |
 | 项目详情 | 顶部固定 GitHub 打开入口、中文介绍、作者中文 README 优先、安装与用途说明、原文、收藏、历史快照和 CSV 导出。 |
 | 行业资讯 | 国内 / 国外、计算机 / AI 筛选；国内 AI 使用 IT之家人工智能栏目，可翻译摘要并阅读原文。 |
@@ -62,7 +63,7 @@ SMTP 密码和授权码只放在服务端，绝不包含在 EXE、源码 ZIP 或
 Release 同时提供 SHA256SUMS.txt。在安装包所在目录打开 PowerShell：
 
 ~~~powershell
-Get-FileHash .\Search-Your-Gits-Setup-1.1.4-x64.exe -Algorithm SHA256
+Get-FileHash .\Search-Your-Gits-Setup-1.1.5-x64.exe -Algorithm SHA256
 ~~~
 
 将结果与 SHA256SUMS.txt 中同名文件的哈希逐字对照。哈希用于核对文件完整性，不能替代对发布者和下载来源的确认。
@@ -88,7 +89,7 @@ npm run dist
 npm run release:check
 ~~~
 
-构建先运行测试，再生成中文 NSIS 安装器、白名单源码 ZIP 和 SHA256 校验文件，输出到 release/1.1.4/。打包不自动发布 GitHub，也不自动递增版本。
+构建先运行测试，再生成中文 NSIS 安装器、白名单源码 ZIP 和 SHA256 校验文件，输出到 release/1.1.5/。打包不自动发布 GitHub，也不自动递增版本。
 
 | 目录 | 内容 |
 | --- | --- |

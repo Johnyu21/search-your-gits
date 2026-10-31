@@ -1,6 +1,6 @@
 {
   "name": "github-rank-desk",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Search Your Gits · 寻迹 — GitHub 开源项目探索工具",
   "author": "future",
   "main": "main.js",

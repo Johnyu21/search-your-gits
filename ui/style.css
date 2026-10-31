@@ -95,3 +95,5 @@ dialog{padding:0;overflow:hidden;max-height:85vh}dialog[open]{display:flex;flex-
 @media(max-width:700px){.dialog-head{flex-wrap:wrap}.dialog-head h2{flex-basis:100%}.dialog-head #closeDetail{margin-left:auto}}
 
 .dialog-head #copyRepo{flex-shrink:0}
+
+.rank-availability{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 20px;padding:12px 0;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}.rank-availability span{min-width:0}.rank-availability button{flex-shrink:0}@media(max-width:900px){.rank-availability{align-items:flex-start;flex-direction:column}.rank-types{flex-wrap:wrap}.rank-sections{flex-wrap:wrap}}

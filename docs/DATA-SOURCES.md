@@ -38,3 +38,7 @@ GitHub 的常规 API 与搜索分别记录冷却，匿名身份与已配置 Toke
 默认翻译 [MyMemory](https://mymemory.translated.net/doc/usagelimits.php) 仍受免费额度限制；可选联系邮箱由用户自行填写并发送给 MyMemory。另支持 [LibreTranslate](https://docs.libretranslate.com/guides/api_usage/) 的完整 /translate 接口，以及兼容 OpenAI 的完整 /v1/chat/completions 接口。只发送用户所选的公开文本，可能产生配置服务的费用；无共享密钥。密钥本机加密，仅发送到所选地址，拒绝携带凭据的 URL 和远端 HTTP，不跟随带密钥请求的重定向。成功译文和分片缓存，警告与失败不当译文保存。
 
 软件更新读取 [本仓库 Releases](https://github.com/Johnyu21/search-your-gits/releases)，不向其他仓库或任意服务器跳转。只比较数字版本，常规 API 要求已上传 Windows 安装包；API 不可用且允许预览版时尝试公开 Atom 订阅，仅提示前往发布页核对。当前没有在线静默下载安装。
+
+## 扩展发现榜（1.1.5）
+
+通过 GitHub Search API 按 `pushed:>=` 筛选近 7 / 30 / 90 天有推送的公开、非 Fork、未归档且至少 1 Star 的仓库，使用 `sort=stars&order=desc`。独立于 Trending 和本机季度增长，支持 Top 25 / 50 / 100，不补造周期 Star 增长。语法依据 [GitHub 仓库搜索文档](https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories)。

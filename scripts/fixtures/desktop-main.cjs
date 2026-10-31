@@ -13,6 +13,7 @@ net.fetch=async(url,options)=>{
   if(url.includes('/releases?'))return Response.json([{tag_name:'v'+futureVersion,prerelease:true,html_url:'https://github.com/Johnyu21/search-your-gits/releases/tag/v'+futureVersion,assets:[{name:'Search-Your-Gits-Setup-'+futureVersion+'-x64.exe',state:'uploaded',size:90000000}]}]);
   if(url.includes('/rate_limit'))return Response.json({resources:{core:{limit:60,remaining:55,reset:Math.floor(Date.now()/1000)+3600}}});
   if(url.includes('/readme'))return Response.json({encoding:'base64',content:Buffer.from('# Search Your Gits\n\n## Usage\nExplore projects and read news.').toString('base64'),name:'README.md'});
+  if(url.includes('/search/')&&new URL(url).searchParams.get('q').startsWith('pushed:'))return Response.json({items:Array.from({length:Number(new URL(url).searchParams.get('per_page'))},(_,i)=>({...repo('discovery/project'+i),stargazers_count:10000-i,pushed_at:'2026-10-31T00:00:00Z'})),total_count:1200});
   if(url.includes('/search/')&&new URL(url).searchParams.get('q').startsWith('precision-demo'))return Response.json({items:[{...repo('small/precision-demo'),stargazers_count:2},{...repo('huge/precision-demo-extra'),stargazers_count:9000},{...repo('popular/precision-demo'),stargazers_count:800},{...repo('medium/precision-demo'),stargazers_count:100}],total_count:4});
   if(url.includes('/search/'))return Response.json({items:[repo('community/related'),repo('Johnyu21/search-your-gits')],total_count:2});
   return Response.json(repo('Johnyu21/search-your-gits'));
