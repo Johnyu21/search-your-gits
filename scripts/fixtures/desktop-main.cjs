@@ -1,6 +1,7 @@
 // Desktop test fixture: isolated profile and synthetic HTTP responses; excluded from the EXE.
 const path=require('node:path');const root=path.resolve(__dirname,'../..');
 const {app,net}=require('electron');app.setPath('userData',process.env.SYG_DESKTOP_PROFILE);app.getVersion=()=>require(path.join(root,'package.json')).version;
+require('electron').dialog.showMessageBox=async(_window,options)=>{global.qa113.confirmations||=[];global.qa113.confirmations.push({message:options.message,buttons:options.buttons,defaultId:options.defaultId,cancelId:options.cancelId});return {response:global.qa113.unstarResponse??1};};
 require('electron').dialog.showErrorBox=(title,text)=>console.error('STARTUP_ERROR',title,text);
 if(!process.env.SYG_DESKTOP_PROFILE)throw Error('请运行 npm run test:desktop');
 const futureVersion=require(path.join(root,'lib/version')).nextVersion(app.getVersion());
@@ -31,4 +32,5 @@ net.fetch=async(url,options)=>{
  return new Response('{}',{status:503});
 };
 require(path.join(root,'lib/github-config.json')).clientId='';
+require(path.join(root,'lib/github-config.json')).oauthClientId='';
 require(path.join(root,'main.js'));

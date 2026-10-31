@@ -2,16 +2,16 @@
 
 一个中文 Windows 桌面应用，用于发现 GitHub 开源项目、阅读国内外技术资讯、比较 AI 模型价格与成本。
 
-当前版本 **1.2.1** · Windows x64 · MIT。
+当前版本 **1.2.2** · Windows x64 · MIT。
 
-[下载 Windows EXE 安装包](https://github.com/Johnyu21/search-your-gits/releases/download/v1.2.1/Search-Your-Gits-Setup-1.2.1-x64.exe) · [最新发布](https://github.com/Johnyu21/search-your-gits/releases/latest) · [全部 Releases](https://github.com/Johnyu21/search-your-gits/releases) · [问题与建议](https://github.com/Johnyu21/search-your-gits/issues)
+[下载 Windows EXE 安装包](https://github.com/Johnyu21/search-your-gits/releases/download/v1.2.2/Search-Your-Gits-Setup-1.2.2-x64.exe) · [最新发布](https://github.com/Johnyu21/search-your-gits/releases/latest) · [全部 Releases](https://github.com/Johnyu21/search-your-gits/releases) · [问题与建议](https://github.com/Johnyu21/search-your-gits/issues)
 
 仓库右侧 Releases 的 **Latest** 为最新正式版。普通用户下载 EXE 安装包即可，源码 ZIP 供开发者使用。
 
 ## 下载与安装（普通用户）
 
 1. 在本仓库页面右侧打开 **Releases**，选择需要的版本。
-2. 在 **Assets** 下载 **Search-Your-Gits-Setup-1.2.1-x64.exe**。以后版本的文件名中版本号会相应变化。
+2. 在 **Assets** 下载 **Search-Your-Gits-Setup-1.2.2-x64.exe**。以后版本的文件名中版本号会相应变化。
 3. 双击安装器，按中文向导选择安装目录。安装到当前 Windows 用户，可创建桌面和开始菜单快捷方式。
 4. 安装结束后启动 **Search Your Gits · 寻迹**。启动图默认显示约 3 秒后进入主界面。1.1.4 可在“设置与数据 → 常规与外观”关闭启动画面并保存，下次启动直接进入主界面。
 
@@ -19,7 +19,7 @@
 
 支持 Windows 10 / 11 的 64 位 x64 系统；本次不提供 Windows 7、32 位、macOS、Linux 或原生 ARM64 安装包。
 
-注意区分：GitHub 自动提供的 **Source code (zip / tar.gz)** 是源码，不是安装程序；Search-Your-Gits-Source-1.2.1.zip 也是开发者源码。普通用户只需下载 **Setup…exe**。
+注意区分：GitHub 自动提供的 **Source code (zip / tar.gz)** 是源码，不是安装程序；Search-Your-Gits-Source-1.2.2.zip 也是开发者源码。普通用户只需下载 **Setup…exe**。
 
 此构建尚未使用代码签名证书，Windows 可能显示“未知发布者”或 SmartScreen 提示。请确认下载自维护者的 Release，按下文核对哈希；组织策略阻止运行时请联系管理员，不要关闭系统安全设置。
 
@@ -43,6 +43,8 @@
 
 ## 首次使用与数据
 
+从旧 GitHub App 登录升级的用户，需在“我的 GitHub → 升级收藏授权”重新授权一次。OAuth 请求 public_repo，用于公开仓库 Star；该范围也包含部分公开仓库写权限，请在官方授权页查看，不申请私有仓库或管理权限。
+
 - 可以不填 GitHub Token。遇到 API 限流后，在“设置与数据”填写自己的 Token；通过 Windows 安全存储加密，只向 GitHub API 发送。
 - CloseAI 在“AI 工具 → Token 价格 → 登录站点”中自行登录官方页面。登录状态保存在本站点的独立本机会话，应用只缓存规范化报价；可点击“清除本机登录”。
 - 登录后，“我的收藏”使用当前 GitHub 账号的 Star；软件内收藏和取消收藏同步 GitHub，网页端改动可在软件中刷新获取。旧本机收藏数据保留，不自动批量上传。设置、缓存、快照与账本保存在当前 Windows 用户的应用数据目录。在“设置与数据”可打开数据目录。升级沿用原应用 ID；卸载默认保留个人数据，不会删除自定义收藏。
@@ -64,7 +66,7 @@ SMTP 密码和授权码只放在服务端，绝不包含在 EXE、源码 ZIP 或
 Release 同时提供 SHA256SUMS.txt。在安装包所在目录打开 PowerShell：
 
 ~~~powershell
-Get-FileHash .\Search-Your-Gits-Setup-1.2.1-x64.exe -Algorithm SHA256
+Get-FileHash .\Search-Your-Gits-Setup-1.2.2-x64.exe -Algorithm SHA256
 ~~~
 
 将结果与 SHA256SUMS.txt 中同名文件的哈希逐字对照。哈希用于核对文件完整性，不能替代对发布者和下载来源的确认。
@@ -90,7 +92,7 @@ npm run dist
 npm run release:check
 ~~~
 
-构建先运行测试，再生成中文 NSIS 安装器、白名单源码 ZIP 和 SHA256 校验文件，输出到 release/1.2.1/。打包不自动发布 GitHub，也不自动递增版本。
+构建先运行测试，再生成中文 NSIS 安装器、白名单源码 ZIP 和 SHA256 校验文件，输出到 release/1.2.2/。打包不自动发布 GitHub，也不自动递增版本。
 
 | 目录 | 内容 |
 | --- | --- |
@@ -111,4 +113,9 @@ npm run release:check
 
 ## GitHub 登录与收藏同步
 
-左下角“更多”集中设置、反馈和登录。账号页支持公开资料、GitHub Star 和我的公开项目；“我的收藏”直接显示当前账号的 GitHub Star；榜单、搜索与详情中的收藏操作同步到 GitHub。旧的本机收藏数据保留，不自动批量上传。发行版已配置公开 Client ID，普通用户点击登录并在 GitHub 官方网页授权即可，无需注册应用或自行申请 Token。详见 [GitHub 登录注册与配置](docs/GITHUB-LOGIN.md)。
+左下角“更多”集中设置、反馈和登录。账号页支持公开资料、GitHub Star 和我的公开项目；“我的收藏”直接显示当前账号的 GitHub Star；榜单、搜索与详情中的收藏操作同步到 GitHub。旧的本机收藏数据保留，不自动批量上传。发行版已配置公开 OAuth Client ID，普通用户点击登录并在 GitHub 官方网页授权即可，无需注册应用或自行申请 Token。详见 [GitHub 登录注册与配置](docs/GITHUB-LOGIN.md)。
+
+
+## 1.2.2 收藏修复与授权升级
+
+本版已修复旧版的收藏请求错误及 GitHub App 集成写入限制：真实 Electron 网络请求已修正，所有取消收藏会先确认。新的公开 OAuth App Client ID 已接入；用户需要重新授权后管理公开仓库收藏，现有 GitHub App 登录不会自动获得新权限。详见 [登录配置说明](docs/GITHUB-LOGIN.md)。可运行 npm run test:github-network 验证真实网络层。

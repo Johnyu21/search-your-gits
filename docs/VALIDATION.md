@@ -93,3 +93,25 @@
 “我的收藏”改为当前 GitHub 账号的 Star 分页列表，榜单、搜索、账号页和详情的收藏写操作使用 GitHub API；未登录不再写本机收藏。旧本机收藏保留，不批量迁移。新增测试覆盖串行切换、未登录拒绝、写失败保持状态、外部取消后刷新及计数。账号界面使用隔离 Electron 测试配置和合成响应，检查收藏页增删、30 条分页、退出清空界面；没有真实修改维护者的 GitHub Star。未打包发布，版本保持 1.1.5。
 
 验证结果：`npm test` 共 88 项通过；`npm run test:account` 与 `npm run test:desktop` 均通过。账号界面回归包含 36 项 Star 的两页浏览、GitHub 侧清空后的刷新、收藏增删和退出后的登录引导；无页面脚本错误。真实账号同步仍需用户运行开发版并操作确认。
+
+
+## 收藏写入故障修复 · 2026-10-31 · 未发布
+
+复现命令 npm run test:github-network：修复前真实 Electron net.fetch 的 PUT 报 net::ERR_INVALID_ARGUMENT，GET/DELETE 可抵达本机服务。去除手动 Content-Length，改传空请求体后，三种方法均返回 204，PUT 实际收到 Content-Length: 0。测试不访问真实 GitHub，不携带用户凭据。
+
+实际账号只读检查显示 Star 读取成功，应用公开权限为 metadata:read 和 starring:write；对已收藏本项目作幂等加星诊断（未取消或新增任何收藏）仍得到 REST 403 Resource not accessible by integration，GraphQL 同样拒绝。当前 GitHub App 无安装记录，不能声称重登旧应用必然解决。改为支持 OAuth 设备授权 public_repo，新增 oauthClientId 配置与旧会话升级入口；新 OAuth Client ID 尚待维护者注册后接入。
+
+所有取消收藏在主进程弹出系统确认，默认/关闭/Esc 保留；测试覆盖取消不发送 DELETE、确认后操作、弹窗期间退出账号不跨账号写入。93 项单元测试通过，账号界面回归通过。Windows MCP 控制状态 ready，但连续截图/快照均返回 RPC 服务器不可用，无法完成 OAuth 表单填写，已向用户说明。版本仍为 1.2.1，不覆盖已发布附件。
+
+最终账号界面和既有桌面回归均通过；已把真实 Electron 网络回归加入 Windows CI 和打包前检查，后续构建不会仅依赖模拟 HTTP。
+
+OAuth 配置补充：2026-10-31 已接入新的公开 Client ID，真实 Electron 对 GitHub 设备授权接口验证通过（pending 后立即取消，不代用户授权）。21 项账号测试及真实网络回归通过；已有用户须手动完成 OAuth 网页授权。
+
+
+## 取消收藏后仍显示 · 2026-10-31 · 未发布
+
+当前真实账号已为 OAuth；用户反馈无报错、项目仍在列表。使用 scripts/check-github-star-cache.cjs 启动真实 Electron 请求本机 HTTP 服务：列表响应 Cache-Control: private,max-age=600，DELETE 返回 204。修复前强制刷新没有再次访问服务器（GET 次数 1），旧列表使已取消项目重新标记为 true。为账号 API 设置 cache:no-store 后，强制刷新再次访问服务器（GET 次数 2），列表为 0、缓存 Star 为 false。
+
+保留应用层每页 5 分钟缓存；写入成功仍清除 Star 列表缓存，确认弹窗不变。npm run test:github-network 已串行包含请求参数回归与真实 HTTP 缓存回归，Windows CI 和打包前会运行。复现完全使用测试令牌与本机服务，不操作真实用户收藏。
+
+验证结果：93 项单元测试、真实 Electron 请求参数与缓存回归，以及账号界面的取消确认/保留/实际取消/分页/退出回归全部通过。测试产物已移到工作区外归档；未改动真实用户 Star，未打包或发布。

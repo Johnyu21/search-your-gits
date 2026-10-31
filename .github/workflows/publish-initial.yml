@@ -1,5 +1,5 @@
 name: Publish current Windows release
-# Maintainer-authorized publication: Search Your Gits 1.2.1
+# Maintainer-authorized publication: Search Your Gits 1.2.2
 on:
   push:
     branches: [main]
