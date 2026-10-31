@@ -1,6 +1,6 @@
 {
   "name": "github-rank-desk",
-  "version": "1.1.5",
+  "version": "1.2.1",
   "description": "Search Your Gits · 寻迹 — GitHub 开源项目探索工具",
   "author": "future",
   "main": "main.js",
@@ -11,16 +11,17 @@
     "version:bump": "node scripts/bump-version.cjs",
     "feedback:server": "node --env-file-if-exists=server/.env server/feedback-server.cjs",
     "release:check": "node scripts/verify-release.cjs",
-    "test:desktop": "node scripts/check-desktop.cjs"
+    "test:desktop": "node scripts/check-desktop.cjs",
+    "test:account": "node scripts/check-account.cjs"
   },
   "dependencies": {
-    "cheerio": "1.2.0",
-    "nodemailer": "^10.2.1"
+    "cheerio": "1.2.0"
   },
   "devDependencies": {
     "electron": "40.8.0",
     "electron-builder": "26.0.12",
-    "playwright-core": "^1.64.1"
+    "playwright-core": "^1.64.1",
+    "nodemailer": "^10.2.1"
   },
   "build": {
     "appId": "com.rankdesk.github",
@@ -35,7 +36,13 @@
       "LICENSE",
       "THIRD-PARTY-NOTICES.md",
       "assets/icon.ico",
-      "assets/icon.png"
+      "assets/icon.png",
+      "!node_modules/**/*.map",
+      "!node_modules/**/*.d.ts",
+      "!node_modules/**/*.d.mts",
+      "!node_modules/**/*.d.cts",
+      "!node_modules/**/test{,s}/**",
+      "!node_modules/**/example{,s}/**"
     ],
     "directories": {
       "output": "release/${version}"
@@ -73,7 +80,12 @@
       "differentialPackage": false,
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico"
-    }
+    },
+    "electronLanguages": [
+      "en-US",
+      "zh-CN",
+      "zh-TW"
+    ]
   },
   "license": "MIT",
   "engines": {

@@ -2,16 +2,16 @@
 
 一个中文 Windows 桌面应用，用于发现 GitHub 开源项目、阅读国内外技术资讯、比较 AI 模型价格与成本。
 
-当前版本 **1.1.5** · Windows x64 · MIT。
+当前版本 **1.2.1** · Windows x64 · MIT。
 
-[下载 Windows EXE 安装包](https://github.com/Johnyu21/search-your-gits/releases/download/v1.1.5/Search-Your-Gits-Setup-1.1.5-x64.exe) · [最新发布](https://github.com/Johnyu21/search-your-gits/releases/latest) · [全部 Releases](https://github.com/Johnyu21/search-your-gits/releases) · [问题与建议](https://github.com/Johnyu21/search-your-gits/issues)
+[下载 Windows EXE 安装包](https://github.com/Johnyu21/search-your-gits/releases/download/v1.2.1/Search-Your-Gits-Setup-1.2.1-x64.exe) · [最新发布](https://github.com/Johnyu21/search-your-gits/releases/latest) · [全部 Releases](https://github.com/Johnyu21/search-your-gits/releases) · [问题与建议](https://github.com/Johnyu21/search-your-gits/issues)
 
 仓库右侧 Releases 的 **Latest** 为最新正式版。普通用户下载 EXE 安装包即可，源码 ZIP 供开发者使用。
 
 ## 下载与安装（普通用户）
 
 1. 在本仓库页面右侧打开 **Releases**，选择需要的版本。
-2. 在 **Assets** 下载 **Search-Your-Gits-Setup-1.1.5-x64.exe**。以后版本的文件名中版本号会相应变化。
+2. 在 **Assets** 下载 **Search-Your-Gits-Setup-1.2.1-x64.exe**。以后版本的文件名中版本号会相应变化。
 3. 双击安装器，按中文向导选择安装目录。安装到当前 Windows 用户，可创建桌面和开始菜单快捷方式。
 4. 安装结束后启动 **Search Your Gits · 寻迹**。启动图默认显示约 3 秒后进入主界面。1.1.4 可在“设置与数据 → 常规与外观”关闭启动画面并保存，下次启动直接进入主界面。
 
@@ -19,7 +19,7 @@
 
 支持 Windows 10 / 11 的 64 位 x64 系统；本次不提供 Windows 7、32 位、macOS、Linux 或原生 ARM64 安装包。
 
-注意区分：GitHub 自动提供的 **Source code (zip / tar.gz)** 是源码，不是安装程序；Search-Your-Gits-Source-1.1.5.zip 也是开发者源码。普通用户只需下载 **Setup…exe**。
+注意区分：GitHub 自动提供的 **Source code (zip / tar.gz)** 是源码，不是安装程序；Search-Your-Gits-Source-1.2.1.zip 也是开发者源码。普通用户只需下载 **Setup…exe**。
 
 此构建尚未使用代码签名证书，Windows 可能显示“未知发布者”或 SmartScreen 提示。请确认下载自维护者的 Release，按下文核对哈希；组织策略阻止运行时请联系管理员，不要关闭系统安全设置。
 
@@ -30,6 +30,7 @@
 | 热门增长 | GitHub Trending 周榜、月榜候选默认按 Star 总数倒序，可切换周期增长或来源顺序；新项目榜按创建时间筛选并按 Star 排序；季度增长使用本机历史快照，首次可能没有数据。 |
 | 扩展发现榜 | 独立筛选近 7 / 30 / 90 天有推送的项目，按 Star 总数排序，可选 Top 25 / 50 / 100；与真实增长榜分开。 |
 | 开源项目搜索 | 搜索公开仓库，支持语言、排序、分页及 GitHub 搜索语法；1.1.4 默认精准优先，同等匹配按 Star 倒序（当前页与最多 100 个同名补充候选内）；也可选择全局 Star 最多或最近更新。 |
+| GitHub 账号与收藏 | 左下角登录并授权；“我的收藏”同步账号 Star，支持分页与刷新。收藏／取消收藏直接修改 GitHub Star。 |
 | 项目详情 | 顶部固定 GitHub 打开入口、中文介绍、作者中文 README 优先、安装与用途说明、原文、收藏、历史快照和 CSV 导出。 |
 | 行业资讯 | 国内 / 国外、计算机 / AI 筛选；国内 AI 使用 IT之家人工智能栏目，可翻译摘要并阅读原文。 |
 | 中文阅读与更新 | 1.1.3 支持列表中文｜原文紧凑切换、翻译服务配置、限流等待与缓存，以及常驻 GitHub Release 新版本提醒。 |
@@ -44,7 +45,7 @@
 
 - 可以不填 GitHub Token。遇到 API 限流后，在“设置与数据”填写自己的 Token；通过 Windows 安全存储加密，只向 GitHub API 发送。
 - CloseAI 在“AI 工具 → Token 价格 → 登录站点”中自行登录官方页面。登录状态保存在本站点的独立本机会话，应用只缓存规范化报价；可点击“清除本机登录”。
-- 收藏、设置、快照与账本保存在当前 Windows 用户的应用数据目录。在“设置与数据”可打开数据目录。升级沿用原应用 ID；卸载默认保留个人数据，不会删除自定义收藏。
+- 登录后，“我的收藏”使用当前 GitHub 账号的 Star；软件内收藏和取消收藏同步 GitHub，网页端改动可在软件中刷新获取。旧本机收藏数据保留，不自动批量上传。设置、缓存、快照与账本保存在当前 Windows 用户的应用数据目录。在“设置与数据”可打开数据目录。升级沿用原应用 ID；卸载默认保留个人数据，不会删除自定义收藏。
 - 用量账本由用户手动记录，不读取供应商账单、余额或个人额度。模型公告不保证个人账户额度已刷新。Token 价格表可点击输入/输出表头按价格升序或降序排列；不同币种分开排序，未公布价格保持在最后。
 - 翻译服务会接收所选公开文本；GitHub Token 不发送给翻译、资讯或价格来源。默认 MyMemory 免费服务仍有公共额度限制；可在设置中配置 LibreTranslate 或兼容 OpenAI 的完整接口地址、模型及密钥。自定义服务可能计费，程序不内置共享付费密钥。翻译仅在用户选择中文阅读/翻译时调用。
 - 1.1.3 限流时优先保留缓存，显示等待时间并可取消自动重试。首次使用且没有缓存时仍需要可访问对应来源的网络；Token 无法绕过网络封锁或翻译额度。
@@ -63,7 +64,7 @@ SMTP 密码和授权码只放在服务端，绝不包含在 EXE、源码 ZIP 或
 Release 同时提供 SHA256SUMS.txt。在安装包所在目录打开 PowerShell：
 
 ~~~powershell
-Get-FileHash .\Search-Your-Gits-Setup-1.1.5-x64.exe -Algorithm SHA256
+Get-FileHash .\Search-Your-Gits-Setup-1.2.1-x64.exe -Algorithm SHA256
 ~~~
 
 将结果与 SHA256SUMS.txt 中同名文件的哈希逐字对照。哈希用于核对文件完整性，不能替代对发布者和下载来源的确认。
@@ -89,7 +90,7 @@ npm run dist
 npm run release:check
 ~~~
 
-构建先运行测试，再生成中文 NSIS 安装器、白名单源码 ZIP 和 SHA256 校验文件，输出到 release/1.1.5/。打包不自动发布 GitHub，也不自动递增版本。
+构建先运行测试，再生成中文 NSIS 安装器、白名单源码 ZIP 和 SHA256 校验文件，输出到 release/1.2.1/。打包不自动发布 GitHub，也不自动递增版本。
 
 | 目录 | 内容 |
 | --- | --- |
@@ -107,3 +108,7 @@ npm run release:check
 [发布到 GitHub 的步骤](docs/RELEASING.md) · [安装验收记录](docs/VALIDATION.md) · [数据来源与计价口径](docs/DATA-SOURCES.md) · [版本历史](CHANGELOG.md) · [第三方许可](THIRD-PARTY-NOTICES.md) · [需求档案](docs/用户需求与提示词记录.md)
 
 原创代码采用 [MIT License](LICENSE)，允许复用和商业使用，需保留版权和许可声明；第三方组件、字体与商标按各自许可使用。
+
+## GitHub 登录与收藏同步
+
+左下角“更多”集中设置、反馈和登录。账号页支持公开资料、GitHub Star 和我的公开项目；“我的收藏”直接显示当前账号的 GitHub Star；榜单、搜索与详情中的收藏操作同步到 GitHub。旧的本机收藏数据保留，不自动批量上传。发行版已配置公开 Client ID，普通用户点击登录并在 GitHub 官方网页授权即可，无需注册应用或自行申请 Token。详见 [GitHub 登录注册与配置](docs/GITHUB-LOGIN.md)。

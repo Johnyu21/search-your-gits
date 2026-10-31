@@ -4,12 +4,18 @@ const {app,net}=require('electron');app.setPath('userData',process.env.SYG_DESKT
 require('electron').dialog.showErrorBox=(title,text)=>console.error('STARTUP_ERROR',title,text);
 if(!process.env.SYG_DESKTOP_PROFILE)throw Error('请运行 npm run test:desktop');
 const futureVersion=require(path.join(root,'lib/version')).nextVersion(app.getVersion());
-global.qa113={rate:false,translateRate:false,opened:[]};
+global.qa113={rate:false,translateRate:false,opened:[],githubAuthorized:false,githubStars:new Set(['qa-owner/public-project'])};
 require('electron').shell.openExternal=async url=>global.qa113.opened.push(url);
 const repo=name=>({full_name:name,description:'Discover useful open source projects.',language:'JavaScript',stargazers_count:42,forks_count:3,html_url:'https://github.com/'+name,created_at:'2026-10-23T00:00:00Z'});
 net.fetch=async(url,options)=>{
+ if(url.endsWith('/login/device/code'))return Response.json({device_code:'qa-private-device-code',user_code:'ABCD-EFGH',expires_in:600,interval:1});
+ if(url.endsWith('/login/oauth/access_token'))return Response.json(global.qa113.githubAuthorized?{access_token:'qa-device-access-token',refresh_token:'qa-device-refresh-token',expires_in:28800,refresh_token_expires_in:15897600}:{error:'authorization_pending'});
  if(url.includes('api.github.com')){
   if(global.qa113.rate)return new Response('{}',{status:429,headers:{'retry-after':String(global.qa113.rateAfter||120)}});
+  if(new URL(url).pathname==='/user')return Response.json({id:9001,login:'future-test',name:'测试用户',bio:'开源项目发现者',public_repos:2,followers:12,following:3});
+  if(url.includes('/user/starred?')){const page=Number(new URL(url).searchParams.get('page')||1),all=[...global.qa113.githubStars];return Response.json(all.slice((page-1)*30,page*30).map(name=>({starred_at:'2026-10-31T00:00:00Z',repo:repo(name)})),{headers:all.length>page*30?{link:'<https://api.github.com/user/starred?page='+(page+1)+'>; rel="next"'}:{}});}
+  if(url.includes('/user/repos?'))return Response.json([repo('future-test/owned-project'),{...repo('future-test/private-project'),private:true}]);
+  if(url.includes('/user/starred/')){const name=new URL(url).pathname.slice('/user/starred/'.length);if(options.method==='PUT')global.qa113.githubStars.add(name);if(options.method==='DELETE')global.qa113.githubStars.delete(name);return new Response(null,{status:options.method==='GET'&&!global.qa113.githubStars.has(name)?404:204});}
   if(url.includes('/releases?'))return Response.json([{tag_name:'v'+futureVersion,prerelease:true,html_url:'https://github.com/Johnyu21/search-your-gits/releases/tag/v'+futureVersion,assets:[{name:'Search-Your-Gits-Setup-'+futureVersion+'-x64.exe',state:'uploaded',size:90000000}]}]);
   if(url.includes('/rate_limit'))return Response.json({resources:{core:{limit:60,remaining:55,reset:Math.floor(Date.now()/1000)+3600}}});
   if(url.includes('/readme'))return Response.json({encoding:'base64',content:Buffer.from('# Search Your Gits\n\n## Usage\nExplore projects and read news.').toString('base64'),name:'README.md'});
@@ -24,4 +30,5 @@ net.fetch=async(url,options)=>{
  if(url.includes('github.com/trending'))return new Response([['Johnyu21/search-your-gits',42,12],['community/small',5,90],['community/middle',30,20]].map(([name,stars,growth])=>'<article class="Box-row"><h2><a href="/'+name+'">'+name+'</a></h2><p>Discover useful open source projects.</p><span itemprop="programmingLanguage">JavaScript</span><a class="Link--muted" href="/'+name+'/stargazers">'+stars+'</a><span class="float-sm-right">'+growth+' stars this week</span></article>').join(''));
  return new Response('{}',{status:503});
 };
+require(path.join(root,'lib/github-config.json')).clientId='';
 require(path.join(root,'main.js'));
