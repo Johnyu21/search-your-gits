@@ -115,3 +115,12 @@ OAuth 配置补充：2026-10-31 已接入新的公开 Client ID，真实 Electro
 保留应用层每页 5 分钟缓存；写入成功仍清除 Star 列表缓存，确认弹窗不变。npm run test:github-network 已串行包含请求参数回归与真实 HTTP 缓存回归，Windows CI 和打包前会运行。复现完全使用测试令牌与本机服务，不操作真实用户收藏。
 
 验证结果：93 项单元测试、真实 Electron 请求参数与缓存回归，以及账号界面的取消确认/保留/实际取消/分页/退出回归全部通过。测试产物已移到工作区外归档；未改动真实用户 Star，未打包或发布。
+
+
+## 能力天梯列布局变化修复 · 2026-11-22 · 开发版
+
+来源：https://artificialanalysis.ai/leaderboards/models 。使用软件相同的 Electron net.fetch 实际获取 HTTP 200 页面。当前叶级表头为 Model、Artificial Analysis Intelligence Index、Cost per Task、Time per Task、First Answer Token、Context Window、Further Analysis。旧代码固定取第 4 列作为评分、第 3 列作为厂商，导致耗时排名与价格厂商错位。
+
+修复 benchmark：按包含 Intelligence Index 的叶级表头动态定位列，兼容原 Context / Creator 布局；读取实际厂商徽标 alt，不将价格作为厂商；继续按评分降序，同分保留来源顺序。能力天梯改用新解析版本缓存键，旧错误评分不回退展示；联网刷新 cache:no-store，保留新格式缓存的 5 分钟有效期与离线时间标注。
+
+新增来源前三行精简结构快照与断言，修复前评分误读为 41.5 / 23.6 / 14.1，修复后为来源的 65 / 62 / 61，厂商与 1M 上下文正确；另验证调换列序、缺少评分列失败、旧缓存不复用与新缓存离线回退。96 项测试通过，既有桌面回归通过。完整来源页面成功解析 69 条有效评分，实际开发界面使用该真实页面快照显示 Top 20，最高项评分、厂商、上下文均匹配。原始 HTML 和截图在工作区外归档。版本仍为 1.2.2，未构建或发布新 EXE。
